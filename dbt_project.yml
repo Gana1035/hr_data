@@ -37,7 +37,15 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 models:
   my_hr_project:
+    staging:
+      +schema: staging
+    marts:
+      dim:
+        +schema: dim
+      fact:
+        +schema: fact
     +pre-hook:
       - insert into DBT_DB_HR.DBT_DB_HR_SCH.AUDIT_LOG(model_name,event_type,excuted_at,dbt_user) values ('{{this.name}}','START',CURRENT_TIMESTAMP,CURRENT_USER)
     +post-hook:
       - insert into DBT_DB_HR.DBT_DB_HR_SCH.AUDIT_LOG(model_name,event_type,excuted_at,dbt_user) values ('{{this.name}}','END',CURRENT_TIMESTAMP,CURRENT_USER)
+    
