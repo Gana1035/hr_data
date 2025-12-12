@@ -1,27 +1,29 @@
-{{
-    config(
-        materialized='incremental',
-        unique_key='EMPLOYEE_ID',
-	incremental_strategy = 'delete+insert',
-	tags = ['dim']
-    )
+{{ 
+  config(
+    materialized='incremental',
+    incremental_strategy='merge',
+    tags=['dim']
+  ) 
 }}
-select EMPLOYEE_ID,
-FIRST_NAME,
-LAST_NAME,
-EMAIL,
-PHONE_NUMBER,
-HIRE_DATE,
-JOB_ID,
-SALARY,
-COMMISSION_PCT,
-MANAGER_ID,
-DEPARTMENT_ID,
-LOAD_TIME
-from {{ref('stg_employees')}}
 
-{% if is_incremental() %}
+with src as (
+  select
+    EMPLOYEE_ID,
+    FIRST_NAME,
+    LAST_NAME,
+    EMAIL,
+    PHONE_NUMBER,
+    HIRE_DATE,
+    JOB_ID,
+    SALARY,
+    COMMISSION_PCT,
+    MANAGER_ID,
+    DEPARTMENT_ID,
+    LOAD_TIME
+  from {{ ref('stg_employees') }}
+--   {% if is_incremental() %}
+--   where LOAD_TIME > (select max(LOAD_TIME) from {{ this }})
+--   {% endif %}
+)
 
-{{ inc() }}
-
-{% endif %}
+select * from src
